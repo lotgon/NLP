@@ -1,0 +1,93 @@
+---
+title: "Exploratory Analysis of SwiftKey Dataset"
+author: "Andrei Pazniak"
+date: "April 28, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r cache = F, echo = F, message = F, warning = F, tidy = F, results='hide'}
+library(stringr)
+library(stringi)
+library(tm)
+library(qdap)
+library(ggplot2)
+library(RWeka)
+library(data.table)
+library(parallel)
+library(fastmatch)
+```
+#Synopsis
+The goal of this document is to parse and analyse text data from SwiftKey Dataset. All documents are grouped by the languanges and source types. There are 3 types,  such as the blogs, news and twitter.
+The main goal of analyse is to find answers on the following questions:
+
+* The most frequent n-grams.
+* How many unique words do you need in a frequency sorted dictionary to cover N% of all word instances in the language?
+
+###Parse and clean data
+```{r warning=F}
+source("Common.R")
+inputDir<-"train"
+if(!dir.exists(inputDir)) SampleCopyFilesInDirectory("source", inputDir, sampleSize = 30000)
+
+rawTrainCorpus<-VCorpus(DirSource(file.path(inputDir, "en_US"), encoding = "UTF-8", pattern="txt1$"), readerControl=list(language="english"))
+trainCorpus<- PreProcessCorpus(rawTrainCorpus)
+rm(rawTrainCorpus)
+```
+To clean data we used several methods:
+
+* Remove all punctuation
+* Remove spaces
+* Remove stop words
+* Tranform all capital letters to lower format
+* Stemming 
+ 
+###Inspect data
+Size of parsed and cleaned data in memory
+```{r}
+ sapply(trainCorpus, object.size)
+```
+
+###Some words are more frequent than others - what are the distributions of word frequencies?
+```{r}
+cl<-makeCluster(detectCores())
+invisible(clusterEvalQ(cl, library(tm)))
+invisible(clusterEvalQ(cl, library(RWeka))) 
+
+tdm1 <- TermDocumentMatrix(trainCorpus, control = list(tokenize = function(x){NGramTokenizer(x, Weka_control(min = 1, max = 1))}))
+freq1 <- rowSums(as.matrix(tdm1))
+tdm2 <- TermDocumentMatrix(trainCorpus, control = list(tokenize = function(x){NGramTokenizer(x, Weka_control(min = 2, max = 2))}))
+freq2 <- rowSums(as.matrix(tdm2))
+tdm3 <- TermDocumentMatrix(trainCorpus, control = list(tokenize = function(x){NGramTokenizer(x, Weka_control(min = 3, max = 3))}))
+freq3 <- rowSums(as.matrix(tdm3))
+tdm4 <- TermDocumentMatrix(trainCorpus, control = list(tokenize = function(x){NGramTokenizer(x, Weka_control(min = 4, max = 4))}))
+freq4 <- rowSums(as.matrix(tdm4))
+
+one_gram<-as.data.table(data.frame(token=names(freq1), N=freq1, stringsAsFactors=F))[order(-N)]
+two_gram<-as.data.table(data.frame(token=names(freq2), N=freq2, stringsAsFactors=F))[order(-N)]
+tri_gram<-as.data.table(data.frame(token=names(freq3), N=freq3, stringsAsFactors=F))[order(-N)]
+qua_gram<-as.data.table(data.frame(token=names(freq4), N=freq4, stringsAsFactors=F))[order(-N)]
+
+ngramFreq<-list(one_gram, two_gram, tri_gram, qua_gram)
+
+ggplot(one_gram[1:30], aes(x=reorder(token, 30:1), y=N), horiz=F) + geom_bar(stat='identity', fill="grey") +  coord_flip() +ylab("Frequency") + xlab("tokens") + ggtitle("The most frequent one-gram")
+ggplot(two_gram[1:30], aes(x=reorder(token, 30:1), y=N), horiz=F) + geom_bar(stat='identity', fill="grey") +  coord_flip() +ylab("Frequency") + xlab("tokens") + ggtitle("The most frequent two-grams")
+ggplot(tri_gram[1:30], aes(x=reorder(token, 30:1), y=N), horiz=F) + geom_bar(stat='identity', fill="grey") +  coord_flip() +ylab("Frequency") + xlab("tokens") + ggtitle("The most frequent third-grams")
+ggplot(qua_gram[1:30], aes(x=reorder(token, 30:1), y=N), horiz=F) + geom_bar(stat='identity', fill="grey") +  coord_flip() +ylab("Frequency") + xlab("tokens") + ggtitle("The most frequent quadra-grams")
+```
+
+###How many unique words do you need in a frequency sorted dictionary to cover 50% of all word instances in the language? 90%?
+```{r }
+  one_gram[,cumN:=cumsum(N)]
+  which.min(  one_gram$cumN < one_gram[.N, cumN] * 0.5)
+  which.min(  one_gram$cumN < one_gram[.N, cumN] * 0.9)
+
+```
+
+#Conclusions
+Further research has to be done. Memory and performance optimization are very important for this analyse because even building DocumentTermMatrix is a very slow process. Our model should be prepared, calculated and stored on powerful computers. The calculated model should be small and simple to use even on mobile devices. 
+
+

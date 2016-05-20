@@ -1,0 +1,9 @@
+name: NLP_Models
+account: lotgon
+server: shinyapps.io
+appId: 103261
+bundleId: 457544
+url: https://lotgon.shinyapps.io/NLP_Models/
+when: 1463749041.59209
+asMultiple: FALSE
+asStatic: FALSE
