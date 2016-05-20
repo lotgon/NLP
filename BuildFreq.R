@@ -46,9 +46,10 @@ sapply( 2:4, BuildN1Tables)
 for(j in 1:4)
   ngramFreq[[j]]<-ngramFreq[[j]][N>1]
 for(j in 1:4)
-  write.table(ngramFreq[[j]], paste0("Cn1gram.txt", j), row.names = F)
-
-
+  write.table(ngramFreq[[j]], paste0(j, "Cn1gram.txt"), row.names = F)
+for(j in 1:4)
+  zip(paste0(j, "Cn1gram.zip"), paste0(j, "Cn1gram.txt"))
+  
 gtList<-list()
 for(j in 1:4)
 {
