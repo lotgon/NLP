@@ -47,6 +47,15 @@ PreProcessCorpus <- function ( corpus )
   corpus <- tm_map(corpus, tm_reduce, tmFuns = transFuncs)
   #tm_map(corpus, removeWords, stopwords())
 }
+PreProcessLastKWordsinCorpus<-function(grams, k)
+{
+  corpus<-VCorpus(VectorSource(grams))
+  corpus<- PreProcessCorpus(corpus)
+  tokens<-WordTokenizer(corpus[[1]])
+  n<-length(tokens)
+  tokens[ seq.int(max(n-k+1, 0), n)]
+}
+
 
 #trainCorpus.dtm <- DocumentTermMatrix(trainCorpus)
 #m <- as.matrix(trainCorpus.dtm)

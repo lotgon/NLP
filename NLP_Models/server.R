@@ -8,27 +8,42 @@
 #
 
 library(shiny)
+library(stringr)
+library(stringi)
+library(tm)
+library(qdap)
+library(ggplot2)
+library(RWeka)
+library(data.table)
+source("kneter.R")
 
 ngramFreq<-list()
 for(j in 1:4)
 {
-  ngramFreq[[j]]<-fread(paste0("gram", j, ".txt"))
+  ngramFreq[[j]]<-fread(unzip(paste0(j, "Cn1gram.zip")))
   setkey(ngramFreq[[j]], token)
 } 
 
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-   
-  output$distPlot <- renderPlot({
-    
-    # generate bins based on input$bins from ui.R
-    x    <- faithful[, 2] 
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    
-    # draw the histogram with the specified number of bins
-    hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    
+  
+  v <- reactiveValues(data = NULL)
+  
+  output$tableKneserOutput <- DT::renderDataTable(DT::datatable({
+    HighestPkn(v$data)
+  }))
+
+  output$tableNaiveOutput <- DT::renderDataTable(DT::datatable({
+    Naive(v$data)
+  }))
+  
+  observeEvent(input$tokens, {
+    v$data<-input$tokens
   })
   
+  observeEvent(input$goButton, {
+    v$data<-paste0(input$tokens, " ")
+  })
+
 })

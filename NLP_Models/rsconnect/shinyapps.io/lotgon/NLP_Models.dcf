@@ -2,8 +2,9 @@ name: NLP_Models
 account: lotgon
 server: shinyapps.io
 appId: 103261
-bundleId: 457544
+bundleId: 461531
 url: https://lotgon.shinyapps.io/NLP_Models/
-when: 1463749041.59209
+when: 1464108530.73387
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: 1Cn1gram.txt|2Cn1gram.txt|3Cn1gram.txt|4Cn1gram.txt

@@ -26,3 +26,11 @@ resultKneser[[6]][grepl("account|case|incident|matter", resultKneser[[6]]$token)
 #result[[7]][grepl("hand|finger|arm|toe", result[[7]]$token)]
 #result[[9]][grepl("inside|weekly|outside|daily", result[[9]]$token)]
 
+PreProcessLastKWordsinCorpus<-function(grams, k)
+{
+  corpus<-VCorpus(VectorSource(grams))
+  corpus<- PreProcessCorpus(corpus)
+  tokens<-WordTokenizer(corpus[[1]])
+  n<-length(tokens)
+  paste(tokens[ seq.int(max(n-k+1, 0), n)] , collapse = " ")
+}

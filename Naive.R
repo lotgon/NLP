@@ -10,9 +10,22 @@ PBO_n <-function(n, gram)
 
 Naive <- function(gram)
 {
-  corpus<-PreProcessCorpus(VCorpus(VectorSource(gram)))
-  tokens<-NGramTokenizer(corpus[[1]], Weka_control(min = 1, max = 1))
+  if( length(gram) == 0 )
+    return (NA)
   
+  isCompleteTokens<-F
+  if( stri_sub(gram, -1, -1) ==' ')
+    isCompleteTokens<-T
+  
+  tokens<-PreProcessLastKWordsinCorpus(gram, 3 + 1-isCompleteTokens)
+  searchString<-paste( tokens, collapse = " ")
+  
+  if( !isCompleteTokens )  
+    tokens<-tokens[-length(tokens)]
+  else
+    searchString<-paste0( searchString, " ")
+  
+#  
   result<-data.table()
   reducedCoef<-1
   
@@ -31,7 +44,7 @@ Naive <- function(gram)
     reducedCoef<-reducedCoef*0.4
     tokens<-tokens[-1]
   }
-  result[order(-PBO_n)]
+  result[stri_startswith_fixed(token, searchString)][order(-PBO_n)]
 }
 
 

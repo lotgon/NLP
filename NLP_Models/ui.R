@@ -1,33 +1,30 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
 
-# Define UI for application that draws a histogram
-shinyUI(fluidPage(
-  
-  # Application title
-  titlePanel("Old Faithful Geyser Data"),
-  
-  # Sidebar with a slider input for number of bins 
-  sidebarLayout(
-    sidebarPanel(
-       sliderInput("bins",
-                   "Number of bins:",
-                   min = 1,
-                   max = 50,
-                   value = 30)
-    ),
+# Load the ggplot2 package which provides
+# the 'mpg' dataset.
+library(ggplot2)
+
+# Define the overall UI
+shinyUI(
+  fluidPage(
+    titlePanel("Kneser-Ney Smoothing"),
     
-    # Show a plot of the generated distribution
+    sidebarLayout(
+      sidebarPanel(
+        textInput("tokens", "Enter first words:", "My mind is"),
+        actionButton("goButton", "Go!")
+      ),
     mainPanel(
-       plotOutput("distPlot")
+      fluidRow(
+        column(6,
+        h4("Kneser-Ney algorithm"),
+        DT::dataTableOutput("tableKneserOutput")
+        ),
+        column(6, 
+        h4("Naive algorithm w/smoothing"),
+        DT::dataTableOutput("tableNaiveOutput")
+        ))
     )
   )
-))
+)
+)
