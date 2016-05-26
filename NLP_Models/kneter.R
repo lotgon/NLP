@@ -1,6 +1,6 @@
-
-HighestPkn<- function (gram)
+HighestPkn<- function (ngramFreq, gram)
 {
+  
   if( length(gram) == 0 )
     return (NA)
   
@@ -22,18 +22,18 @@ HighestPkn<- function (gram)
   n <- length(inputTokens) + 1
   if( n==1 )
     return (data.table(token="I need more information"))
-  
-  count_gramNMinus1 <- ngramFreq[[n-1]][collapseTokens==token, N]
-  if( length(count_gramNMinus1) == 0 )
-    return (HighestPkn(paste( inputTokens[-1], collapse = " ")))
-  
+  #return (ngramFreq[[n]][stri_startswith_fixed(token, searchString)])
+  count_gramNMinus1 <- ngramFreq[[n-1]][collapseTokens, N]
   N1_gramNMinus1<- ngramFreq[[n-1]][collapseTokens, N1_Start]
+  if( length(count_gramNMinus1) == 0 | is.na(N1_gramNMinus1) )
+   return (HighestPkn(ngramFreq, substr(searchString, nchar(inputTokens[1])+2, nchar(searchString)) ))
+  
   
   ngramFreq[[n]][stri_startswith_fixed(token, searchString)][,.(tokenWithoutFirst=substr(token, nchar(collapseTokens)+2, nchar(token)), N, token)][
-               , .(token, probability=(N-0.5)/count_gramNMinus1 + 0.5/count_gramNMinus1 * N1_gramNMinus1 * Pkn(tokenWithoutFirst, inputTokens[-1]))][
+               , .(token, probability=(N-0.5)/count_gramNMinus1 + 0.5/count_gramNMinus1 * N1_gramNMinus1 * Pkn(ngramFreq, tokenWithoutFirst, inputTokens[-1]))][
                  order(-probability)]
 }
-Pkn <- function (wi_tokens, preTokens)
+Pkn <- function (ngramFreq, wi_tokens, preTokens)
 {
   if(length(wi_tokens) < 1 )
     return (NA)
@@ -47,7 +47,7 @@ Pkn <- function (wi_tokens, preTokens)
   first <- ngramFreq[[n]] [collapseAllTokens, N1_End - 0.5] / ngramFreq[[n-1]][collapsePreTokens, N1_Mid]
   first[first<0]<-0
   
-  second<- 0.5 / ngramFreq[[n-1]][collapsePreTokens, N1_Mid] * ngramFreq[[n-1]][collapsePreTokens, N1_Start] * Pkn(wi_tokens, preTokens[-1])
+  second<- 0.5 / ngramFreq[[n-1]][collapsePreTokens, N1_Mid] * ngramFreq[[n-1]][collapsePreTokens, N1_Start] * Pkn(ngramFreq, wi_tokens, preTokens[-1])
   
   first + second
 }

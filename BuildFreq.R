@@ -53,11 +53,3 @@ for(j in 1:4)
 
 
   
-gtList<-list()
-for(j in 1:4)
-{
-gt<-ngramFreq[[j]] [, .(Nr=.N), by=N][order(N)]
-gtList[[j]] <- data.table( c=gt[1:(.N-1), N], ca=(gt[2:.N, Nr] / gt[1:(.N-1), Nr] *  gt[1:(.N-1), N]) )
-gtList[[j]] <- rbind(gtList[[j]], data.table(c=gt[.N, N], ca=gt[.N, N]))
-setkey( gtList[[j]], "c")
-}

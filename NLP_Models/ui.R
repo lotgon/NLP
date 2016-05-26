@@ -11,11 +11,15 @@ shinyUI(
     
     sidebarLayout(
       sidebarPanel(
-        textInput("tokens", "Enter first words:", "My mind is"),
-        actionButton("goButton", "Go!")
+        textInput("tokens", "Enter first words:", ""),
+        actionButton("goButton", "Go!"),
+        h6("Press go button or add space to get predictions of the next word")
+        
       ),
     mainPanel(
       fluidRow(
+        
+        DT::dataTableOutput("tableOutput"),
         column(6,
         h4("Kneser-Ney algorithm"),
         DT::dataTableOutput("tableKneserOutput")
