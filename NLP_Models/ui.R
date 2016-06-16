@@ -11,7 +11,7 @@ shinyUI(
     
     sidebarLayout(
       sidebarPanel(
-        textInput("tokens", "Enter first words:", ""),
+        textInput("tokens", "Enter first words:", "and captured a police "),
         actionButton("goButton", "Go!"),
         h6("Press go button or add space to get predictions of the next word")
         
